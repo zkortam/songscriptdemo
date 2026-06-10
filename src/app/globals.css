@@ -2,20 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme tokens (RGB triplets for Tailwind alpha support) ───────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
+  --canvas: 247 243 236; /* warm cream #F7F3EC */
+  --ink: 21 32 28; /* #15201C */
+  --muted: 106 107 97; /* #6A6B61 */
+  --faint: 154 154 142; /* #9A9A8E */
+  --surface: 255 253 248; /* warm white, alpha applied in classes */
+  --hairline: 46 102 87; /* pine, low alpha */
+  --ring: 60 128 112; /* green-500 */
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  --canvas: 14 22 20; /* #0E1614 */
+  --ink: 236 241 238; /* #ECF1EE */
+  --muted: 155 172 166; /* #9BACA6 */
+  --faint: 92 106 100; /* #5C6A64 */
+  --surface: 24 44 40; /* #182C28 */
+  --hairline: 255 255 255;
+  --ring: 79 154 133; /* green-400 */
+  color-scheme: dark;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-canvas text-ink antialiased;
+  }
+  body {
+    font-feature-settings: "ss01";
+  }
+  ::selection {
+    background: rgb(var(--ring) / 0.22);
+  }
+  /* Quiet, rounded scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--faint) / 0.5) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--faint) / 0.45);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
   }
 }
 
-html,
-body {
-  background: var(--background);
-  color: var(--foreground);
+@layer components {
+  /* Glass for floating chrome (header, popovers, dialogs, tray) — blur lives here only */
+  .glass-chrome {
+    background: rgb(var(--surface) / 0.66);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgb(var(--hairline) / 0.1);
+  }
+  /* Cheap translucent surface for the content plane (cards) — NO per-card blur */
+  .glass-card {
+    background: rgb(var(--surface) / 0.55);
+    contain: paint;
+  }
+  .dark .glass-card {
+    background: rgb(var(--surface) / 0.5);
+  }
+  /* Focus ring used everywhere */
+  .ring-focus {
+    @apply outline-none ring-2 ring-[rgb(var(--ring)/0.55)] ring-offset-2 ring-offset-canvas;
+  }
+  /* Cheap off-screen skipping so hundreds of cards scroll at 60fps without JS windowing */
+  .cv-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 230px;
+  }
+  .cv-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 60px;
+  }
+  /* Lit piano keys when a note is sounding */
+  .key-white.lit {
+    background: #5fc97d !important;
+    box-shadow: 0 -10px 18px rgba(95, 201, 125, 0.5);
+  }
+  .key-black.lit {
+    background: #2e6657 !important;
+    box-shadow: 0 -8px 16px rgba(95, 201, 125, 0.5);
+  }
+  /* Note-name labels stay legible and pop on the key that is sounding */
+  .key-label {
+    transition:
+      color 90ms ease,
+      transform 90ms ease;
+  }
+  .key-white.lit .key-label {
+    color: #0b1f17 !important;
+    transform: scale(1.08);
+  }
+  .key-black.lit .key-label {
+    color: #eafff4 !important;
+    transform: scale(1.08);
+  }
+  /* Hand isolation: dim a muted hand's notes so the learner can focus one hand */
+  .roll-notes.mute-left [data-hand="left"],
+  .roll-notes.mute-right [data-hand="right"] {
+    opacity: 0.14 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Soft static brand glows so the glass refracts something */
+.bg-glows {
+  background-image:
+    radial-gradient(60rem 60rem at 12% -10%, rgb(60 128 112 / 0.1), transparent 60%),
+    radial-gradient(50rem 50rem at 100% 0%, rgb(79 154 133 / 0.08), transparent 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

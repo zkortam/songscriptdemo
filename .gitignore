@@ -17,6 +17,9 @@ build/
 .DS_Store
 *.pem
 
+# local dev store
+.data/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
