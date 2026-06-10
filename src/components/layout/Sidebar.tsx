@@ -90,15 +90,8 @@ export function Sidebar() {
         collapsed ? "w-[68px] px-3" : "w-60 px-4",
       )}
     >
-      <div className={cn("flex items-center", collapsed ? "flex-col gap-2" : "justify-between px-1")}>
+      <div className={cn("flex items-center", collapsed ? "justify-center" : "px-1")}>
         <BrandMark compact={collapsed} />
-        <IconButton label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={toggle}>
-          {collapsed ? (
-            <PanelLeftOpen className="h-[18px] w-[18px]" />
-          ) : (
-            <PanelLeftClose className="h-[18px] w-[18px]" />
-          )}
-        </IconButton>
       </div>
 
       <div className={cn("mt-5", collapsed && "flex w-full justify-center")}>
@@ -134,12 +127,21 @@ export function Sidebar() {
 
       <div
         className={cn(
-          "flex items-center",
-          collapsed ? "flex-col gap-2" : "justify-between px-1",
+          "flex",
+          collapsed ? "flex-col items-center gap-2" : "items-center justify-between px-1",
         )}
       >
         <UserMenu placement="top" />
-        <ThemeToggle />
+        <div className={cn("flex", collapsed ? "flex-col gap-2" : "items-center gap-1")}>
+          <ThemeToggle />
+          <IconButton label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={toggle}>
+            {collapsed ? (
+              <PanelLeftOpen className="h-[18px] w-[18px]" />
+            ) : (
+              <PanelLeftClose className="h-[18px] w-[18px]" />
+            )}
+          </IconButton>
+        </div>
       </div>
     </aside>
   );

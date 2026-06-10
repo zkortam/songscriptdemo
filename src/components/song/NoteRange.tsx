@@ -32,7 +32,7 @@ export function NoteRange({ lowest, highest }: { lowest: number; highest: number
             .map((k) => (
               <div
                 key={k.midi}
-                className="absolute bottom-0 top-0 rounded-b-[2px] bg-gradient-to-b from-[#efefe9] to-white shadow-[inset_-1px_0_1px_rgba(0,0,0,0.14)] dark:from-[#9aa3a0] dark:to-[#b4bdb9]"
+                className="absolute bottom-0 top-0 bg-gradient-to-b from-[#efefe9] to-white shadow-[inset_-1px_0_1px_rgba(0,0,0,0.12),inset_0_-6px_8px_-6px_rgba(0,0,0,0.20)] dark:from-[#9aa3a0] dark:to-[#b4bdb9]"
                 style={{ left: `${k.left}%`, width: `${k.width}%` }}
               />
             ))}
