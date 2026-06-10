@@ -1,100 +1,83 @@
-# Songscription — Catalogue
+# Songscription Fullstack Take-Home
 
-A single-page library where you upload MIDI files (a stand-in for "you just transcribed a song"),
-browse them, and open one to see learner-relevant detail and **play it back in the browser** on an
-interactive piano roll.
+Thanks for taking the time to do this. This project gives you a feel for the kind of work you'd be doing at Songscription, and gives us a sense of how you think about UI, UX, and backend integration.
 
-Built with Next.js 15 (App Router), TypeScript, Tailwind, and Supabase.
+## Product context
 
-## Quick start
+We're building a piano learning app where users can transcribe any music into a MIDI file, then learn it using an interactive piano roll. One page of that app is the **catalogue page** where users see every transcription they've created and click into one to practice it.
+
+**You're building that catalogue page.**
+
+You don't need to build any transcription logic. Treat uploading a `.mid` file as a stand-in for "the user just transcribed a song". The upload is the action that adds an entry to their library.
+
+## The task
+
+Build a single-page web app where a user can:
+
+1. **Upload a MIDI file** to add it to their catalogue. (Stand-in for "transcribe a song.")
+2. **Browse the catalogue** of every file they've added.
+3. **Click into a file** to see some details about it. Think about what details would be relevant for a learner of the song.
+
+## Things to think about
+
+These are examples of the kinds of product questions we think about. You don't have to answer or address them all in your build, they're just here as examples of different paths you could explore.
+
+- How do we make the **upload process** as smooth as possible? What happens during upload, after, and on failure?
+- Once a file is in the catalogue, **how does it appear to the user?** How do you make it easy to differentiate between songs? What if they don't know exactly what they want to practice that day?
+- As the catalogue grows, **how does someone find the song they want to come back to?** Search? Filter? Sort? Tags? Recently played? Favorites? Folders? Something else?
+- **What settings might a user want?** Per-file? Library-wide? What lives where?
+- What does the catalogue feel like with **0 items**? With **3**? With **300**?
+
+If you need data we haven't given you (favorites, last-practiced timestamps, accuracy metrics, practice logs, tags, difficulty, user info, etc.), invent it. Mock data is fine and encouraged.
+
+## What we're looking for
+
+- **It must persist.** Refreshing the page should keep the files. Use any backend you like to store the file and any extra metadata about it. We use Supabase, but you can choose whatever backend you're comfortable with.
+- **Visual polish.** This is a product surface. Empty states, hover states, loading, transitions, typography, spacing etc should be reasonable.
+- **How you store and query data.** We want to see how you store the data, which metadata you decide to add to the database, etc. 
+- **Product thinking.** Is the final output intuitive and usable? Can you take inspiration from other similar applications?
+- **Creative problem solving.** We've given you the bare minimum to get started. If you think the catalogue needs audio playback, previews, thumbnails, waveforms, anything, feel free to add it. There's no "right" set of features...surprise us.
+
+## What we're NOT looking for
+
+- **Auth.** Don't build login, that's a time sink. Treat it as a single user. If you want richer UI (avatars, settings, "your" stats, etc.), feel free to mock a user's data. We just want to see the product surface.
+- **A custom piano roll or practice experience.** If you want to design around it (e.g., a "Practice" button on each catalogue entry), feel free to leave a placeholder region (something like a panel that says *"this is where the piano roll would go"* is totally fine).
+
+## Time
+
+**Spend 2-3 hours.** We'd like to see what you can do in this time window. We recommend time boxing it and sending us what you've got by the 3-hour mark.
+
+Tools like Cursor, Copilot, ChatGPT, Claude, etc. are all fair game.
+
+## Getting started
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000 — works immediately, no setup
+npm run dev
 ```
 
-Out of the box it persists to a local file store (`.data/`), so you can upload, browse, and play
-right away. To use **Supabase** (production), add keys and the app switches automatically:
+The app runs at [http://localhost:3000](http://localhost:3000). Sample `.mid` files are in the `public/samples/` folder. You're also free to use your own.
 
-```bash
-# Create a free Supabase project, run supabase/schema.sql in its SQL editor
-# (table, indexes, public `midi` storage bucket), then:
-cp .env.example .env.local      # set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (server-only)
-```
+## Stack
 
-Other scripts: `npm test`, `npm run typecheck`, `npm run build`,
-`npm run seed [count]` (seed N demo songs into Supabase to feel the catalogue at scale).
+The starter is **Next.js 15 (App Router) + TypeScript + Tailwind**.
 
-The backend is chosen by a small `Store` interface (`src/lib/store`): Supabase when configured,
-otherwise the local file store. Route handlers depend only on the interface, so the two are
-interchangeable and both are exercised by tests.
+You're free to:
 
-## What it does
+- Restructure the project layout however you want.
+- Swap the styling system, add a component library (shadcn, MUI, Mantine, etc.).
+- Add any libraries you'd add at work.
 
-- **Upload** one or many `.mid` files by drag-and-drop anywhere or the Add song button. Files parse,
-  store, and appear with a live progress tray that survives navigating away mid-upload.
-- **Browse** with instant search (title and tags), sort, favorites and tag filters, and a grid or a
-  dense list view. "Surprise me" and a "Jump back in" shelf help when you do not know what to play.
-- **Open a song** for its key, tempo, time signature, duration, a difficulty ring, the played note
-  range on a mini keyboard, practice stats, and a **Synthesia-style falling-notes roll** that plays
-  the MIDI with a real piano voice, hand-split colors, seeking, practice speeds, and loop.
+## Submission
 
-## Backend
+When you're done, email **[katie@songscription.ai](mailto:katie@songscription.ai)** and **[alex@songscription.ai](mailto:alex@songscription.ai)** with:
 
-**Supabase** (Postgres + Storage). It is what Songscription uses, so it doubles as a "can work in your
-stack" signal, and Storage plus a typed Postgres table is the right shape for "a file plus metadata."
+1. A link to your **GitHub repo** (public, or invite `ayeitskatie1212` if private).
+2. Screenshots of the finished UI.
+3. A short note (3–5 sentences) covering:
+  - What backend you chose and why.
+  - One thing you'd do differently with more time.
+  - One thing you're proud of.
 
-All database access is **server-side only** through Next route handlers using the service-role key;
-the browser never holds a Supabase key. Row Level Security is enabled with no policies (deny all), and
-the service role bypasses it. The `midi` bucket is public-read, so playback fetches the file by URL.
 
-## How data is stored and queried
-
-One `transcriptions` table (see `supabase/schema.sql`). Beyond the basics it stores the metadata a
-learner cares about, parsed from the MIDI itself: `tempo_bpm`, estimated `key_signature`,
-`time_signature`, pitch range, a decomposed `difficulty_parts` plus a `difficulty_score`, a
-music-derived `accent_hue`, and a compact `thumb` (at most 64 normalized columns) that the card
-fingerprint renders directly so the list payload stays small. Indexes back the sort options
-(`created_at`, `is_favorite`, `difficulty_score`, `last_practiced_at`) and a `title` search.
-
-The list endpoint supports server-side `?q=` and `?sort=`, while the client also filters instantly on
-the cached set for a snappy feel. Mutations are optimistic with rollback, and the catalogue and detail
-pages read the **same React Query cache**, so an edit on one is already reflected on the other.
-
-## A few things worth a look
-
-- **Generative fingerprints** — each card's art is drawn from that song's own notes (a pitch-over-time
-  envelope and top-voice contour), so every card is unique and the library reads as a gallery.
-- **Music-derived color** — a song's accent hue comes from its key and mode, constrained to a brand
-  green-to-cyan band, so color means something and the library stays cohesive.
-- **The roll** uses one geometry module shared by the thumbnail and the full player, animates via a
-  single GPU transform (no per-frame React), and disposes its audio on navigation.
-
-## Architecture
-
-```
-src/lib          pure logic: midi parse, difficulty model, key estimation, accent,
-                 roll geometry, formatting, constants, types  (unit-tested)
-src/data         api client, React Query hooks + optimistic mutations, SSR reads
-src/providers    Query, Theme (FOUC-free), Upload queue
-src/components    ui primitives (cva variants) + layout, catalogue, song features
-src/app          routes + route handlers + error/not-found/loading
-```
-
-Design tokens (color, radius, glass, shadow, type, spacing, motion) live once in the Tailwind config
-and `globals.css`; components reference tokens, not raw values.
-
-## Testing
-
-`npm test` runs Vitest against the three bundled sample files, asserting the parser, difficulty model,
-key estimation, accent, and formatters (including determinism). Typecheck and lint are clean.
-
-## Submission note
-
-- **Backend and why:** Supabase (Postgres + Storage), because it matches Songscription's stack and is
-  the natural fit for storing a file plus rich, queryable metadata, with server-only access for safety.
-- **One thing I would do differently with more time:** add the controlled hover-to-preview audio on
-  cards (the visual hover is in; the audio engine is scaffolded but gated out to avoid any latency
-  feeling), and paginate the list endpoint for libraries in the thousands.
-- **One thing I am proud of:** the generative fingerprint and the shared roll geometry, so the same
-  musical idea appears as the card art and as the full playable piano roll, from one code path.
+That's it. Looking forward to seeing what you build!
