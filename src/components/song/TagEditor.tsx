@@ -48,10 +48,10 @@ export function TagEditor({ song, allTags }: { song: Transcription; allTags: str
             }}
             onBlur={() => setTimeout(() => setAdding(false), 120)}
             placeholder="Add tag"
-            className={cn("h-8 w-28 rounded-full glass-card px-3 text-[13px] placeholder:text-faint", focusRing)}
+            className={cn("h-8 w-48 rounded-full glass-card px-3.5 text-[13px] placeholder:text-faint", focusRing)}
           />
           {suggestions.length > 0 && (
-            <span className="absolute left-0 top-[calc(100%+6px)] z-50 flex flex-col gap-0.5 rounded-xl border border-hairline/10 bg-surface p-1.5 shadow-soft-hover">
+            <span className="absolute left-0 top-[calc(100%+6px)] z-50 flex w-48 flex-col gap-0.5 rounded-xl border border-hairline/10 bg-surface p-1.5 shadow-soft-hover">
               {suggestions.map((s) => (
                 <button
                   key={s}

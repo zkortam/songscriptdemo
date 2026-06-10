@@ -70,6 +70,11 @@ export function Sidebar() {
   useEffect(() => {
     setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
   }, []);
+
+  // Expose the rail width to CSS so a full-bleed sticky bar can span the content area.
+  useEffect(() => {
+    document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
+  }, [collapsed]);
   const toggle = () => {
     setCollapsed((c) => {
       localStorage.setItem(STORAGE_KEY, c ? "0" : "1");

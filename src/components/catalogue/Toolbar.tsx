@@ -69,7 +69,7 @@ export function Toolbar({
             onChange={(e) => setText(e.target.value)}
             placeholder="Search songs"
             aria-label="Search songs"
-            className="pl-10 pr-9"
+            className="pl-10 pr-12"
           />
           {text ? (
             <button
@@ -83,7 +83,7 @@ export function Toolbar({
               <X className="h-4 w-4" />
             </button>
           ) : (
-            <kbd className="pointer-events-none absolute right-3 top-1/2 hidden h-5 min-w-5 -translate-y-1/2 place-items-center rounded border border-hairline/20 px-1 text-[11px] text-faint sm:grid">
+            <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden h-7 w-7 -translate-y-1/2 place-items-center rounded-full border border-hairline/25 text-[13px] text-faint sm:grid">
               /
             </kbd>
           )}
@@ -93,7 +93,12 @@ export function Toolbar({
         <Popover
           align="start"
           trigger={
-            <Button variant="ghost" size="sm" aria-label={`Sort by ${sortLabel}, ${params.reversed ? "ascending" : "descending"}`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-11 text-[14px]"
+              aria-label={`Sort by ${sortLabel}, ${params.reversed ? "ascending" : "descending"}`}
+            >
               {params.reversed ? (
                 <ArrowUpNarrowWide className="h-4 w-4 text-faint" />
               ) : (
@@ -140,7 +145,7 @@ export function Toolbar({
           align="start"
           className="w-64"
           trigger={
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="h-11 text-[14px]">
               <SlidersHorizontal className="h-4 w-4" />
               Filter
               {activeFilters > 0 && (
@@ -206,6 +211,7 @@ export function Toolbar({
         </Popover>
 
         <SegmentedToggle
+          size="lg"
           value={params.view}
           onChange={(v) => update({ view: v })}
           options={[
@@ -215,7 +221,7 @@ export function Toolbar({
         />
 
         <Tooltip label="Surprise me">
-          <Button variant="ghost" size="sm" aria-label="Surprise me" className="px-3" onClick={onSurprise}>
+          <Button variant="ghost" size="sm" aria-label="Surprise me" className="h-11 w-11 px-0" onClick={onSurprise}>
             <Shuffle className="h-[18px] w-[18px]" />
           </Button>
         </Tooltip>

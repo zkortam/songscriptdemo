@@ -1,6 +1,7 @@
 "use client";
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/cn";
 import { useTranscriptions } from "@/data/queries";
 import { useUpload } from "@/providers/UploadProvider";
 import { useCatalogueParams } from "@/hooks/useCatalogueParams";
@@ -22,6 +23,26 @@ export function CatalogueView({ initial }: { initial: Transcription[] }) {
   const [params, update, clearFilters] = useCatalogueParams();
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement | null>(null);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const [stuck, setStuck] = useState(false);
+
+  // Only paint the sticky toolbar's backdrop once it's actually pinned to the top.
+  // At rest it stays transparent so it doesn't show as a box over the brand glow.
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const offset = window.matchMedia("(min-width: 1024px)").matches ? 0 : 56;
+      setStuck(el.getBoundingClientRect().top <= offset + 0.5);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
 
   // "/" focuses search unless already typing in a field.
   useEffect(() => {
@@ -99,17 +120,29 @@ export function CatalogueView({ initial }: { initial: Transcription[] }) {
     <div className="space-y-6">
       <h1 className="text-[24px] font-semibold tracking-tight">Your library</h1>
       {showJumpBackIn && <JumpBackIn songs={jumpBackIn} />}
-      <div className="sticky top-[56px] z-20 -mx-4 bg-canvas/85 px-4 py-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-10 lg:top-0 lg:px-10">
-        <Toolbar
-          params={params}
-          update={update}
-          clearFilters={clearFilters}
-          allTags={allTags}
-          count={filtered.length}
-          total={songs.length}
-          onSurprise={surprise}
-          searchRef={searchRef}
-        />
+      {/* Full-bleed sticky bar: the background spans the whole content area
+          (sidebar edge → viewport edge) via a viewport-width centering trick,
+          while the inner column keeps the controls aligned with the cards. */}
+      <div
+        ref={toolbarRef}
+        style={{ width: "calc(100vw - var(--sidebar-w))", marginLeft: "50%", transform: "translateX(-50%)" }}
+        className={cn(
+          "sticky top-[56px] z-20 py-2 transition-colors duration-200 lg:top-0",
+          stuck && "bg-canvas/85 backdrop-blur-sm",
+        )}
+      >
+        <div className="mx-auto max-w-content px-4 sm:px-6 lg:px-10">
+          <Toolbar
+            params={params}
+            update={update}
+            clearFilters={clearFilters}
+            allTags={allTags}
+            count={filtered.length}
+            total={songs.length}
+            onSurprise={surprise}
+            searchRef={searchRef}
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (

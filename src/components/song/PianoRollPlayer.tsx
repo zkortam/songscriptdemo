@@ -214,8 +214,8 @@ export function PianoRollPlayer({
       {/* Piano keyboard: keys sit on a dark shelf, with a glowing strike line
           at the top where the falling notes land so it reads as one instrument. */}
       <div className={cn("relative w-full select-none bg-[#090f0d]", isFs ? "h-28" : "h-[76px]")}>
-        {/* Strike line: the "now" marker where notes meet their keys */}
-        <div className="pointer-events-none absolute inset-x-0 -top-px z-30 h-[2px] bg-gradient-to-r from-cyan-400/25 via-white/45 to-green-400/25" />
+        {/* Strike line: a neutral "now" seam where notes meet their keys (no colored hue) */}
+        <div className="pointer-events-none absolute inset-x-0 -top-px z-30 h-px bg-gradient-to-r from-white/10 via-white/28 to-white/10" />
         <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-3 bg-gradient-to-b from-white/[0.07] to-transparent" />
         {layout.keys
           .filter((k) => !k.black)

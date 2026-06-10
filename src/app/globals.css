@@ -25,6 +25,20 @@
   color-scheme: dark;
 }
 
+/* Width of the fixed sidebar, so a full-bleed sticky bar can span exactly the
+   content area (sidebar edge → viewport edge). The sidebar only exists at lg+. */
+:root {
+  --sidebar-w: 0px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --sidebar-w: 240px; /* w-60, expanded */
+  }
+  html.sidebar-collapsed {
+    --sidebar-w: 68px; /* collapsed rail */
+  }
+}
+
 @layer base {
   html,
   body {

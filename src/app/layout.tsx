@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Suspense>
               <Sidebar />
             </Suspense>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 overflow-x-clip">
               <div className="lg:hidden">
                 <AppHeader />
               </div>

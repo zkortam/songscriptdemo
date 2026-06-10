@@ -120,7 +120,7 @@ export function fingerprintPaths(
   const topY = pad + 6; // the highest note sits just under the top edge
   const floorY = height - pad - height * 0.12; // the lowest note floats above the baseline
   const baseY = height - pad; // where the fill closes
-  const X = (x: number) => pad + x * (width - pad * 2);
+  const X = (x: number) => x * width; // span the full width edge-to-edge (corners clip it)
   const Y = (p: number) => topY + (1 - Math.max(0, Math.min(1, p))) * (floorY - topY);
 
   const tops = smoothSeries(
