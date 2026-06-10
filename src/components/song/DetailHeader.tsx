@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { FavoriteButton, MoreMenu } from "@/components/catalogue/SongActions";
+import { KeyLabel } from "@/components/ui/KeyLabel";
 import { TagEditor } from "./TagEditor";
 import { useRename } from "@/data/queries";
-import { keyLabel, formatTempo, formatDuration } from "@/lib/format";
+import { formatTempo, formatDuration } from "@/lib/format";
 import { MAX_TITLE_LEN } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { focusRing } from "@/components/ui/styles";
@@ -52,19 +53,34 @@ export function DetailHeader({ song, allTags }: { song: Transcription; allTags: 
               className={cn("w-full rounded-lg bg-surface/60 px-2 py-1 text-[28px] font-semibold", focusRing)}
             />
           ) : (
-            <h1
-              onClick={() => {
-                setTitle(song.title);
-                setEditing(true);
-              }}
-              className="cursor-text truncate text-[28px] font-semibold leading-tight tracking-tight"
-              title="Click to rename"
-            >
-              {song.title}
-            </h1>
+            <div className="group/title flex min-w-0 items-center gap-2">
+              <h1
+                onClick={() => {
+                  setTitle(song.title);
+                  setEditing(true);
+                }}
+                className="cursor-text truncate text-[28px] font-semibold leading-tight tracking-tight"
+                title="Click to rename"
+              >
+                {song.title}
+              </h1>
+              <button
+                aria-label="Rename song"
+                onClick={() => {
+                  setTitle(song.title);
+                  setEditing(true);
+                }}
+                className={cn(
+                  "shrink-0 rounded-full p-1.5 text-faint opacity-0 transition hover:bg-surface/70 hover:text-ink group-hover/title:opacity-100",
+                  focusRing,
+                )}
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </div>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted">
-            <span>{keyLabel(song.keySignature, song.keyIsEstimated)}</span>
+            <KeyLabel keySignature={song.keySignature} estimated={song.keyIsEstimated} />
             <span className="tabular-nums">{formatTempo(song.tempoBpm)}</span>
             <span className="tabular-nums">{song.timeSignature}</span>
             <span className="tabular-nums">{formatDuration(song.durationSeconds)}</span>

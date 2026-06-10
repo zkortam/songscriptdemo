@@ -51,7 +51,7 @@ export function TagEditor({ song, allTags }: { song: Transcription; allTags: str
             className={cn("h-8 w-28 rounded-full glass-card px-3 text-[13px] placeholder:text-faint", focusRing)}
           />
           {suggestions.length > 0 && (
-            <span className="absolute left-0 top-[calc(100%+6px)] z-50 flex flex-col gap-0.5 rounded-xl glass-chrome p-1.5 shadow-soft">
+            <span className="absolute left-0 top-[calc(100%+6px)] z-50 flex flex-col gap-0.5 rounded-xl border border-hairline/10 bg-surface p-1.5 shadow-soft-hover">
               {suggestions.map((s) => (
                 <button
                   key={s}

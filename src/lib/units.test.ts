@@ -111,6 +111,11 @@ describe("parseRollNotes hand split", () => {
     expect(notes.length).toBeGreaterThan(0);
     expect(notes.every((n) => n.hand === "left" || n.hand === "right")).toBe(true);
   });
+  it("uses both hands on a two-hand piece rather than collapsing to one", () => {
+    const { notes } = parseRollNotes(loadSample("beethoven-fur-elise.mid"));
+    expect(notes.some((n) => n.hand === "left")).toBe(true);
+    expect(notes.some((n) => n.hand === "right")).toBe(true);
+  });
 });
 
 describe("normalizeTags", () => {

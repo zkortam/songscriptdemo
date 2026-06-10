@@ -1,13 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useUpload } from "@/providers/UploadProvider";
-import { ACCEPTED_EXTENSIONS } from "@/lib/constants";
-
-function isMidi(file: File) {
-  const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-  return ACCEPTED_EXTENSIONS.includes(ext as (typeof ACCEPTED_EXTENSIONS)[number]);
-}
+import { splitMidiFiles, NON_MIDI_MESSAGE } from "@/lib/files";
 
 /** Full-window drag-and-drop. Counter-based so child elements do not cause flicker. */
 export function DragOverlay() {
@@ -34,8 +30,11 @@ export function DragOverlay() {
       e.preventDefault();
       depth = 0;
       setDragging(false);
-      const files = Array.from(e.dataTransfer?.files ?? []).filter(isMidi);
-      if (files.length) enqueue(files);
+      const dropped = Array.from(e.dataTransfer?.files ?? []);
+      if (dropped.length === 0) return;
+      const { midi, rejected } = splitMidiFiles(dropped);
+      if (midi.length) enqueue(midi);
+      if (rejected.length) toast.error(NON_MIDI_MESSAGE);
     };
     window.addEventListener("dragenter", onEnter);
     window.addEventListener("dragleave", onLeave);

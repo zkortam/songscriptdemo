@@ -66,61 +66,73 @@ export function buildThumb(
   return filled;
 }
 
-const smooth = (pts: [number, number][]): string => {
+/** Light moving average to tame single-column spikes without flattening the arc. */
+function smoothSeries(vals: number[], radius = 1): number[] {
+  if (radius <= 0) return vals;
+  return vals.map((_, i) => {
+    let sum = 0;
+    let n = 0;
+    for (let j = i - radius; j <= i + radius; j++) {
+      if (j >= 0 && j < vals.length) {
+        sum += vals[j];
+        n++;
+      }
+    }
+    return sum / n;
+  });
+}
+
+/** Catmull-Rom spline through points → a flowing cubic-bezier path. */
+function spline(pts: [number, number][]): string {
   if (pts.length === 0) return "";
-  if (pts.length === 1) return `M ${pts[0][0]},${pts[0][1]}`;
-  let d = `M ${pts[0][0]},${pts[0][1]}`;
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1];
+  if (pts.length < 3) {
+    return pts.map(([x, y], i) => `${i ? "L" : "M"} ${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+  }
+  let d = `M ${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i - 1] ?? pts[i];
     const [x1, y1] = pts[i];
-    const mx = (x0 + x1) / 2;
-    d += ` Q ${x0},${y0} ${mx},${(y0 + y1) / 2}`;
-    d += ` T ${x1},${y1}`;
+    const [x2, y2] = pts[i + 1];
+    const [x3, y3] = pts[i + 2] ?? pts[i + 1];
+    const c1x = x1 + (x2 - x0) / 6;
+    const c1y = y1 + (y2 - y0) / 6;
+    const c2x = x2 - (x3 - x1) / 6;
+    const c2y = y2 - (y3 - y1) / 6;
+    d += ` C ${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${x2.toFixed(2)},${y2.toFixed(2)}`;
   }
   return d;
-};
+}
 
 /**
- * SVG paths for the fingerprint: a soft range envelope + a top-voice line.
- * `minBand` guarantees a visible ribbon thickness so single-voice songs (where
- * lo == hi == top) still read as full, not a hairline. Vertical inset keeps the
- * contour off the rounded corners.
+ * SVG paths for the fingerprint: a single smooth top-voice ridge with a soft
+ * fill down to a baseline. We render only the lightly-smoothed melodic contour
+ * (no raw per-column min/max envelope, which read as noisy ghost spikes), and
+ * keep a floor so the line floats above the bottom instead of plunging to it —
+ * so each card is a clean, flowing signature of the song.
  */
 export function fingerprintPaths(
   thumb: ThumbColumn[],
   width: number,
   height: number,
-  pad = 20,
-  minBand = 16,
+  pad = 14,
 ): { area: string; line: string } {
   if (!thumb.length) return { area: "", line: "" };
-  const inset = 0.12; // keep the contour within the middle 76% vertically
-  const top = pad + height * inset;
-  const h = height - 2 * (pad + height * inset);
+  const topY = pad + 6; // the highest note sits just under the top edge
+  const floorY = height - pad - height * 0.12; // the lowest note floats above the baseline
+  const baseY = height - pad; // where the fill closes
   const X = (x: number) => pad + x * (width - pad * 2);
-  const Y = (p: number) => top + (1 - p) * h;
+  const Y = (p: number) => topY + (1 - Math.max(0, Math.min(1, p))) * (floorY - topY);
 
-  const hiPts: [number, number][] = [];
-  const loPts: [number, number][] = [];
-  const topPts: [number, number][] = [];
-  for (const c of thumb) {
-    const x = X(c.x);
-    const topY = Y(c.top);
-    let hiY = Y(c.hi);
-    let loY = Y(c.lo);
-    if (loY - hiY < minBand) {
-      hiY = topY - minBand / 2;
-      loY = topY + minBand / 2;
-    }
-    hiPts.push([x, hiY]);
-    loPts.push([x, loY]);
-    topPts.push([x, topY]);
-  }
-
-  const areaTop = smooth(hiPts);
-  const areaBottom = smooth([...loPts].reverse());
-  const area = `${areaTop} L ${loPts[loPts.length - 1][0]},${loPts[loPts.length - 1][1]} ${areaBottom.replace(/^M/, "L")} Z`;
-  return { area, line: smooth(topPts) };
+  const tops = smoothSeries(
+    thumb.map((c) => c.top),
+    1,
+  );
+  const pts: [number, number][] = tops.map((t, i) => [X(thumb[i].x), Y(t)]);
+  const line = spline(pts);
+  const x0 = pts[0][0].toFixed(2);
+  const x1 = pts[pts.length - 1][0].toFixed(2);
+  const area = `${line} L ${x1},${baseY.toFixed(2)} L ${x0},${baseY.toFixed(2)} Z`;
+  return { area, line };
 }
 
 export function isBlackKey(midi: number): boolean {

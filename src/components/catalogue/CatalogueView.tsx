@@ -77,49 +77,62 @@ export function CatalogueView({ initial }: { initial: Transcription[] }) {
 
   const hasFilters = params.q || params.favorite || params.tags.length > 0;
   const showJumpBackIn = !hasFilters && songs.length >= 6 && jumpBackIn.length > 0;
-  // Replay the content crossfade on sort/filter/view changes, but not on each
-  // keystroke (q is excluded) so typing in search stays instant and flicker-free.
-  const viewKey = `${params.sort}|${params.reversed}|${params.favorite}|${params.tags.join(",")}|${params.view}`;
+  // Only crossfade when switching grid<->list. Sorting/filtering keep the same
+  // container so rows just reconcile and reorder in place — no entrance-animation
+  // replay, no flicker, no scroll jump.
 
   if (songs.length === 0 && items.length === 0) {
     return (
       <>
         <h1 className="text-[24px] font-semibold tracking-tight">Your library</h1>
-        <EmptyState />
+        <div className="grid min-h-[60svh] place-items-center">
+          <EmptyState />
+        </div>
         <DragOverlay />
       </>
     );
   }
 
+  const favoritesOnly = params.favorite && !params.q && params.tags.length === 0;
+
   return (
     <div className="space-y-6">
       <h1 className="text-[24px] font-semibold tracking-tight">Your library</h1>
       {showJumpBackIn && <JumpBackIn songs={jumpBackIn} />}
-      <Toolbar
-        params={params}
-        update={update}
-        clearFilters={clearFilters}
-        allTags={allTags}
-        count={filtered.length}
-        total={songs.length}
-        onSurprise={surprise}
-        searchRef={searchRef}
-      />
+      <div className="sticky top-[56px] z-20 -mx-4 bg-canvas/85 px-4 py-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-10 lg:top-0 lg:px-10">
+        <Toolbar
+          params={params}
+          update={update}
+          clearFilters={clearFilters}
+          allTags={allTags}
+          count={filtered.length}
+          total={songs.length}
+          onSurprise={surprise}
+          searchRef={searchRef}
+        />
+      </div>
 
       {filtered.length === 0 ? (
         hasFilters ? (
           <div className="mx-auto mt-10 max-w-md animate-fade-up rounded-xl glass-card p-8 text-center shadow-soft">
-            <p className="text-[15px] font-medium">No songs match your search.</p>
+            <p className="text-[15px] font-medium">
+              {favoritesOnly ? "No favorites yet." : "No songs match your filters."}
+            </p>
+            <p className="mt-1 text-[13px] text-muted">
+              {favoritesOnly
+                ? "Tap the heart on any song to save it here."
+                : "Try removing a filter or searching for something else."}
+            </p>
             <div className="mt-4 flex justify-center">
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                Clear filters
+                {favoritesOnly ? "Browse all songs" : "Clear filters"}
               </Button>
             </div>
           </div>
         ) : null
       ) : params.view === "grid" ? (
         <div
-          key={viewKey}
+          key={params.view}
           className="grid animate-fade-up grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {filtered.map((song) => (
@@ -127,7 +140,7 @@ export function CatalogueView({ initial }: { initial: Transcription[] }) {
           ))}
         </div>
       ) : (
-        <div key={viewKey} className="animate-fade-up">
+        <div key={params.view} className="animate-fade-up">
           <SongListHeader params={params} update={update} />
           <div className="space-y-0.5">
             {filtered.map((song) => (

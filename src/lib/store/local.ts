@@ -1,13 +1,24 @@
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { normalizeTags } from "@/lib/tags";
 import type { Transcription } from "@/lib/types";
 import type { Store, CreateInput, UpdatePatch, ListOpts } from "./types";
 import { freshTranscription, applyListOpts } from "./shared";
 
+// On serverless hosts (Vercel/Lambda) the bundle dir (process.cwd() === /var/task)
+// is read-only; only the OS temp dir is writable. Falling back there keeps the app
+// from hard-crashing with "ENOENT: mkdir '/var/task/.data'" when Supabase is not
+// configured. Note: temp storage is ephemeral and not shared across instances —
+// for real persistence on a deployment, configure Supabase (see README).
+const SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DEFAULT_DATA_DIR = SERVERLESS
+  ? join(tmpdir(), "songscription-data")
+  : join(process.cwd(), ".data");
+
 /** Local file-backed store: zero-setup persistence for dev and demos. */
 export class LocalStore implements Store {
-  private dir = process.env.LOCAL_DATA_DIR || join(process.cwd(), ".data");
+  private dir = process.env.LOCAL_DATA_DIR || DEFAULT_DATA_DIR;
   private dbPath = join(this.dir, "transcriptions.json");
   private blobsDir = join(this.dir, "blobs");
 

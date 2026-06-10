@@ -16,7 +16,6 @@ const HAND_COLOR = { left: "#46C7D6", right: "#5FC97D" } as const;
 const FULL_LO = 21; // A0
 const FULL_HI = 108; // C8
 const FULL_LAYOUT = keyboardLayout(FULL_LO, FULL_HI);
-const FULL_SPAN = FULL_HI - FULL_LO;
 const VIEW_KEY = "songscription-roll-view";
 const NAMES_KEY = "songscription-roll-names";
 
@@ -58,12 +57,10 @@ export function PianoRollPlayer({
       localStorage.setItem(NAMES_KEY, v ? "0" : "1");
       return !v;
     });
-  const toggleView = () =>
-    setView((v) => {
-      const next = v === "full" ? "focus" : "full";
-      localStorage.setItem(VIEW_KEY, next);
-      return next;
-    });
+  const selectView = (next: "focus" | "full") => {
+    localStorage.setItem(VIEW_KEY, next);
+    setView(next);
+  };
 
   // Measure the notes viewport so playback math and fullscreen stay in sync.
   useEffect(() => {
@@ -98,10 +95,10 @@ export function PianoRollPlayer({
     return [lo, hi];
   }, [notes]);
 
-  const { layout, lo, hi } = useMemo(() => {
-    if (view === "full") return { layout: FULL_LAYOUT, lo: FULL_LO, hi: FULL_HI };
+  const { layout } = useMemo(() => {
+    if (view === "full") return { layout: FULL_LAYOUT };
     const r = rangeForRoll(lowest, highest, 28);
-    return { layout: keyboardLayout(r.lo, r.hi), lo: r.lo, hi: r.hi };
+    return { layout: keyboardLayout(r.lo, r.hi) };
   }, [view, lowest, highest]);
 
   const hasLeft = useMemo(() => notes.some((n) => n.hand === "left"), [notes]);
@@ -172,32 +169,33 @@ export function PianoRollPlayer({
     pb.toggle();
   };
 
-  const mmPct = (m: number) => ((m - FULL_LO) / FULL_SPAN) * 100;
-
   return (
     <div
       ref={panelRef}
       className={cn("relative overflow-hidden bg-roll-bg shadow-soft", isFs ? "flex h-full flex-col rounded-none" : "rounded-xl")}
     >
-      {/* View toggle: a label plus a slim track showing which part of the keyboard is shown */}
-      <button
-        onClick={toggleView}
-        title={view === "full" ? "Focus on this song's range" : "Show the full keyboard"}
-        className={cn(
-          "absolute right-3 top-3 z-30 flex items-center gap-2.5 rounded-full bg-black/45 py-1.5 pl-3.5 pr-3 backdrop-blur-sm transition hover:bg-black/65",
-          focusRing,
-        )}
+      {/* View toggle: a two-state segmented switch between the song's range and the full keyboard */}
+      <div
+        role="group"
+        aria-label="Keyboard view"
+        className="absolute right-3 top-3 z-30 inline-flex items-center gap-0.5 rounded-full bg-black/45 p-0.5 backdrop-blur-sm"
       >
-        <span className="text-[13px] font-medium text-white/85">
-          {view === "full" ? "Full keyboard" : "Focused"}
-        </span>
-        <div className="relative h-1.5 w-24 overflow-hidden rounded-full bg-white/20">
-          <div
-            className="absolute inset-y-0 rounded-full bg-green-400"
-            style={{ left: `${mmPct(lo)}%`, width: `${Math.max(5, mmPct(hi) - mmPct(lo))}%` }}
-          />
-        </div>
-      </button>
+        {(["focus", "full"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => selectView(v)}
+            aria-pressed={view === v}
+            title={v === "focus" ? "Focus on this song's range" : "Show the full keyboard"}
+            className={cn(
+              "rounded-full px-3 py-1 text-[13px] font-medium transition",
+              view === v ? "bg-white/15 text-white" : "text-white/55 hover:text-white/90",
+              focusRing,
+            )}
+          >
+            {v === "focus" ? "Focus" : "Full"}
+          </button>
+        ))}
+      </div>
 
       {/* Falling notes */}
       <div

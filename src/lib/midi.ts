@@ -161,23 +161,46 @@ export function parseMidi(buf: ArrayBuffer, fileName: string): ParsedMidi {
   };
 }
 
-/** Full notes for the playable roll (client-side), split by hand. */
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = sorted.length >> 1;
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Full notes for the playable roll (client-side), split by hand.
+ *
+ * MIDI carries no hand or finger data, so this is a heuristic (true hand
+ * separation needs a model). With two or more melodic tracks we rank tracks by
+ * median pitch — the higher-register tracks play right — which beats assuming
+ * track order. A single track is split at its own median pitch rather than a
+ * fixed middle C, so a bass- or treble-heavy piece does not collapse onto one hand.
+ */
 export function parseRollNotes(buf: ArrayBuffer): {
   notes: { time: number; midi: number; duration: number; velocity: number; hand: "left" | "right" }[];
   duration: number;
 } {
   const midi = new Midi(buf);
   const melodicTracks = midi.tracks.filter((t) => t.channel !== PERCUSSION_CHANNEL && t.notes.length);
-  const byTrack = melodicTracks.length >= 2;
+
+  let handOf: (trackIdx: number, midiNote: number) => "left" | "right";
+  if (melodicTracks.length >= 2) {
+    const trackMedian = melodicTracks.map((t) => median(t.notes.map((n) => n.midi)));
+    const split = median(trackMedian);
+    handOf = (idx) => (trackMedian[idx] >= split ? "right" : "left");
+  } else {
+    const split = median(melodicTracks.flatMap((t) => t.notes.map((n) => n.midi)));
+    handOf = (_idx, m) => (m >= split ? "right" : "left");
+  }
+
   const notes = melodicTracks.flatMap((track, idx) =>
     track.notes.map((n) => ({
       time: n.time,
       midi: n.midi,
       duration: n.duration,
       velocity: n.velocity,
-      hand: (byTrack ? (idx === 0 ? "right" : "left") : n.midi >= 60 ? "right" : "left") as
-        | "left"
-        | "right",
+      hand: handOf(idx, n.midi),
     })),
   );
   return { notes, duration: Math.max(0.001, midi.duration) };

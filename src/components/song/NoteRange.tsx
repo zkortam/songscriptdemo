@@ -26,13 +26,13 @@ export function NoteRange({ lowest, highest }: { lowest: number; highest: number
       </div>
 
       <div className="flex flex-1 flex-col justify-center">
-        <div className="relative h-24 w-full overflow-hidden rounded-md bg-black">
+        <div className="relative h-24 w-full overflow-hidden rounded-md bg-black dark:bg-[#0b1210]">
           {LAYOUT.keys
             .filter((k) => !k.black)
             .map((k) => (
               <div
                 key={k.midi}
-                className="absolute bottom-0 top-0 rounded-b-[2px] bg-gradient-to-b from-[#efefe9] to-white shadow-[inset_-1px_0_1px_rgba(0,0,0,0.14)]"
+                className="absolute bottom-0 top-0 rounded-b-[2px] bg-gradient-to-b from-[#efefe9] to-white shadow-[inset_-1px_0_1px_rgba(0,0,0,0.14)] dark:from-[#9aa3a0] dark:to-[#b4bdb9]"
                 style={{ left: `${k.left}%`, width: `${k.width}%` }}
               />
             ))}

@@ -30,7 +30,11 @@ export async function POST(req: NextRequest) {
     const name = file.name;
     const ext = name.slice(name.lastIndexOf(".")).toLowerCase();
     if (!ACCEPTED_EXTENSIONS.includes(ext as (typeof ACCEPTED_EXTENSIONS)[number])) {
-      return fail("bad_type", "Only .mid or .midi files are supported.", 400);
+      return fail(
+        "bad_type",
+        "Only MIDI files (.mid, .midi) are supported. Audio transcription from MP3/WAV isn't available yet.",
+        400,
+      );
     }
     if (file.size === 0) return fail("empty", "That file is empty.", 400);
     if (file.size > MAX_FILE_BYTES) return fail("too_large", "That file is too large.", 413);

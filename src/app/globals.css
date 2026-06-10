@@ -7,7 +7,7 @@
   --canvas: 247 243 236; /* warm cream #F7F3EC */
   --ink: 21 32 28; /* #15201C */
   --muted: 106 107 97; /* #6A6B61 */
-  --faint: 154 154 142; /* #9A9A8E */
+  --faint: 118 122 108; /* #767A6C — darkened from #9A9A8E for legible secondary text */
   --surface: 255 253 248; /* warm white, alpha applied in classes */
   --hairline: 46 102 87; /* pine, low alpha */
   --ring: 60 128 112; /* green-500 */
@@ -18,7 +18,7 @@
   --canvas: 14 22 20; /* #0E1614 */
   --ink: 236 241 238; /* #ECF1EE */
   --muted: 155 172 166; /* #9BACA6 */
-  --faint: 92 106 100; /* #5C6A64 */
+  --faint: 126 140 134; /* #7E8C86 — lightened from #5C6A64 for legible secondary text */
   --surface: 24 44 40; /* #182C28 */
   --hairline: 255 255 255;
   --ring: 79 154 133; /* green-400 */
@@ -61,13 +61,17 @@
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     border: 1px solid rgb(var(--hairline) / 0.1);
   }
-  /* Cheap translucent surface for the content plane (cards) — NO per-card blur */
+  /* Cheap translucent surface for the content plane (cards) — NO per-card blur.
+     A hairline border gives cards and controls a defined edge on the low-contrast
+     cream canvas, where the soft shadow alone wasn't enough to read as a surface. */
   .glass-card {
     background: rgb(var(--surface) / 0.55);
+    border: 1px solid rgb(var(--hairline) / 0.1);
     contain: paint;
   }
   .dark .glass-card {
     background: rgb(var(--surface) / 0.5);
+    border-color: rgb(255 255 255 / 0.06);
   }
   /* Focus ring used everywhere */
   .ring-focus {

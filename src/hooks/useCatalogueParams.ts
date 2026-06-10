@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { DEFAULT_SORT, type SortKey } from "@/lib/constants";
 
@@ -22,9 +22,21 @@ export interface ParamPatch {
 }
 
 export function useCatalogueParams(): [CatalogueParams, (patch: ParamPatch) => void, () => void] {
-  const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
+
+  // Sort/filter/view are purely client-side concerns (the list is already loaded
+  // and sorted in the browser). Updating the URL with history.replaceState keeps
+  // it shareable and back-button friendly WITHOUT a Next navigation — so it never
+  // re-runs the dynamic server component, flashes loading.tsx, or jumps scroll.
+  // Next's useSearchParams reads pushState/replaceState natively.
+  const writeUrl = useCallback(
+    (next: URLSearchParams) => {
+      const qs = next.toString();
+      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
+    },
+    [pathname],
+  );
 
   const params: CatalogueParams = {
     q: sp.get("q") ?? "",
@@ -49,18 +61,16 @@ export function useCatalogueParams(): [CatalogueParams, (patch: ParamPatch) => v
       if (patch.favorite !== undefined) setOrDel("fav", patch.favorite ? "1" : "", "");
       if (patch.tags !== undefined) setOrDel("tags", patch.tags.join(","), "");
       if (patch.view !== undefined) setOrDel("view", patch.view === "list" ? "list" : "", "");
-      const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      writeUrl(next);
     },
-    [sp, pathname, router],
+    [sp, writeUrl],
   );
 
   const clearFilters = useCallback(() => {
     const next = new URLSearchParams(sp.toString());
     ["q", "fav", "tags"].forEach((k) => next.delete(k));
-    const qs = next.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [sp, pathname, router]);
+    writeUrl(next);
+  }, [sp, writeUrl]);
 
   return [params, update, clearFilters];
 }
